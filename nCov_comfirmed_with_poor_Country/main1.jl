@@ -1,5 +1,5 @@
 using DataFrames
 using CSV
-using DelimitedFiles
-read
-A=readdlm("DXYArea.csv",",")
+
+A=DataFrame(CSV.read("nCov_comfirmed_with_poor_Country\\DXYArea.csv"))
+describe(A)
