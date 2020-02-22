@@ -62,15 +62,14 @@ for i in 1:419
     if qkind==nothing
         push!(NE,[name,city,0,0,0,Dates.Date(2000-1-1)])
     else
-        push!(NE,[name,city,Covid[qkind,11],Covid[qkind,12],Covid[qkind,12],Covid[qkind,14]])
+        push!(NE,[name,city,Covid[qkind,11],Covid[qkind,12],Covid[qkind,13],Covid[qkind,14]])
     end
     print(i)
 
 end
-XLSX.writetable("myjieguo.xlsx",Sheet1=(collect(DataFrames.eachcol(NE)),DataFrames.names(NE)))
 
 
-
+XLSX.writetable("myjieguo1.xlsx",Sheet1=(collect(DataFrames.eachcol(NE)),DataFrames.names(NE)))
 
 ##
 #A=DataFrame(CSV.read("nCov_comfirmed_with_poor_Country\\DXYArea.csv"))
