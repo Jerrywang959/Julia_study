@@ -10,7 +10,7 @@ C=deleterows!(B,tuopin)    #脱贫的县不考虑
 ## 第二部分：贫困区县划到地级市
 NE=DataFrame(Name=String[],directly_under=String[],确诊=Int64[],治愈=Int64[],死亡=Int64[],日期=Dates.Date[])
 Covid=DataFrame(CSV.read("out_2.22.csv"))
-quhua=DataFrame(XLSX.readdata("行政区划.xlsx","Sheet1!B4:C3216"))
+quhua=DataFrame(XLSX.readdata("nCov_comfirmed_with_poor_Country\\行政区划.xlsx","Sheet1!B4:C3216"))
 province_name=["安徽","甘肃","广西","贵州",
 "海南","河北","河南","黑龙江","湖北","湖南",
 "吉林","江西","内蒙古","宁夏","青海","山西",
@@ -69,7 +69,7 @@ for i in 1:419
 end
 
 
-XLSX.writetable("myjieguo1.xlsx",Sheet1=(collect(DataFrames.eachcol(NE)),DataFrames.names(NE)))
+XLSX.writetable("nCov_comfirmed_with_poor_Country\\myjieguo1.xlsx",Sheet1=(collect(DataFrames.eachcol(NE)),DataFrames.names(NE)))
 
 ##
 #A=DataFrame(CSV.read("nCov_comfirmed_with_poor_Country\\DXYArea.csv"))
