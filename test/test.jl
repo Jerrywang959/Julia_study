@@ -1,4 +1,4 @@
-# %%
+# %% 测试用hydrogen使用julia内核
 using CSV
 print(1)
 print("test")
