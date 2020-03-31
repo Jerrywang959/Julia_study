@@ -1,5 +1,4 @@
 using Flux
-using Revise
 1+1
 # %%
 W1 = rand(3, 5)
@@ -55,6 +54,10 @@ loss(x, y) = sum((predict(x) .- y).^2)
 x, y = rand(5), rand(2) # Dummy data
 l = loss(x, y) # ~ 3
 
-θ = Params([W, b])
-grads = gradient(() -> loss(x, y), θ)
+grads = gradient(() -> loss(x, y), params([W, b]))
 # %%
+using Flux.Optimise: update!
+η = 0.1
+for p in (W, b)
+  update!(p, -η * grads[p])
+end
