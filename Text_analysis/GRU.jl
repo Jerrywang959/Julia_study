@@ -1,3 +1,6 @@
+## 数据来源:  https://www.datafountain.cn/competitions/310/datasets
+## 词向量来源: https://github.com/Embedding/Chinese-Word-Vectors
+
 using CSV,DataFrames,PyCall,Statistics,RCall,JLD
 using Flux
 using Flux: onehotbatch,logitcrossentropy,onecold,@epochs,RNN,GRU,chunk
