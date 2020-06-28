@@ -1,6 +1,5 @@
 # Author: 王建越  Coding:UTF-8
 # 使用Julia作为主语言, 数据处理使用Julia, 模型拟合用`RCall`调用R
-
 #=
 Idea: 胜场次数W直接决定是否进入季后赛, 因此只需要预测胜场次数W就行
 
