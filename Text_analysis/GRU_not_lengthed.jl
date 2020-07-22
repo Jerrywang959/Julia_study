@@ -23,6 +23,21 @@ Trainraw=CSV.read("/home/jerrywang/Desktop/car_data/Final_project.csv")
 aim=Trainraw[!,:sentiment_value]
 aim2=Trainraw[!,:subject]
 
+
+### 主题词典
+Subjetct=Dict()
+Subjetct["安全性"]=1
+Subjetct["操控"]=2
+Subjetct["动力"]=3
+Subjetct["价格"]=4
+Subjetct["空间"]=5
+Subjetct["内饰"]=6
+Subjetct["配置"]=7
+Subjetct["价格"]=8
+Subjetct["舒适性"]=9
+Subjetct["外观"]=10
+Subjetct["油耗"]=11
+tran_aim2=map(x->Subjetct[x],aim2)
 ## 分词
 
 Wordset=by(Trainraw ,:content_id  , word = :content => x->getword.(x) )
@@ -49,6 +64,7 @@ PureWord=by(Wordset,:content_id,pure_word=:word => x-> deletepoint.(x) )
 
 ## 分词后统一长度
 # 获取最长的分词长度
+#=
 max_length=maximum(length.(PureWord[!,2]))
 
 
@@ -61,7 +77,7 @@ function complete(x::Array{String,1})::Array{String,1}
     return tem
 end
 PureWord_lengthed=by(PureWord,:content_id, wordlengthed=:pure_word=>x->complete.(x) )
-
+=#
 ## 分词向量化
 # 预先训练的模型来自 https://github.com/Embedding/Chinese-Word-Vectors, 选择从微博微博语料库预训练的模型
 # 读取模型   
@@ -78,98 +94,21 @@ word2vec(x::String)::Array{Float64,1}=x in keys(modelDict) ? modelDict[x] : zero
 # 一个句向量转化为一系列词向量
 sentence2vec(x::Array{String,1})::Array{Array{Float64,1},1}=map(x->word2vec.(x),x)
 # 完成转换
-WordVector=by(PureWord_lengthed,:content_id, vec=:wordlengthed=>x->sentence2vec.(x))
+WordVector=by(PureWord,:content_id, vec=:pure_word=>x->sentence2vec.(x))
+WordVector2=copy(WordVector)
 WordVector.y=aim
+
+WordVector2.yy=tran_aim2
 
 
 ## 分割数据集
 
 train,test= Lathe.preprocess.TrainTestSplit(WordVector, 0.75)
-
+train2,test2= Lathe.preprocess.TrainTestSplit(WordVector2, 0.75)
 #暂存结果,方便下次使用
-@save "/home/jerrywang/Desktop/var.jld" train test
-@load "/home/jerrywang/Desktop/var.jld"
+@save "/home/jerrywang/Desktop/svar.jld" train test
+#@load "/home/jerrywang/Desktop/svar.jld"
 
-## 输出结果编码
+@save "/home/jerrywang/Desktop/svar2.jld" train2 test2
+#@load "/home/jerrywang/Desktop/svar2.jld"
 
-
-train_out,test_out=chunk(onehotbatch(train[:,3],-1:1),size(train,1)),chunk(onehotbatch(test[:,3],-1:1),size(test,1))
-train_input,test_input=train[:,2],test[:,2]
-
-#train_input,test_input=zeros(max_length,size(train,1)),zeros(max_length,size(test,1))
-#for i in 1:size(train,1)
-#    train_input[:,i]=train[:,2][i]
-#end
-#for i in 1:size(test,1)
-#    test_input[:,i]=test[:,2][i]
-#end
-
-#  数据放入DataLoader
-#train_data = DataLoader(train_input, train_out, batchsize=args().batchsize, shuffle=true)
-#test_data = DataLoader(test_input, test_out, batchsize=args().batchsize)
-
-
-
-
-
-#function loss_all(dataloader, model)
-#    l = 0f0
-#    for (x,y) in dataloader
-#        l += Flux.logitcrossentropy(model(x), y)
-#    end
-#    l/length(dataloader)
-#end
-#=
-function accuracy(data_loader, model)
-    acc = 0
-    for (x,y) in data_loader
-        acc += sum(onecold(cpu(model(x))) .== onecold(cpu(y)))*1 / size(x,2)
-    end
-    acc/length(data_loader)
-end
-=#
-
-
-
-## GRU网络训练
-
-# 模型训练参数调整
-@with_kw mutable struct args
-    η::Float64 = 3e-4     # 学习率
-    batchsize::Int = 50   # 批量处理的数量   batch size
-    epochs::Int = 10       # 训练次数
-    device::Function = cpu  # set as gpu, if gpu available
-end
-Arg=args()
-
-# 建立模型
-m = Chain(GRU(300,64),Dense(64,3))
-
-# 衡量模型的结果
-function eval_model(x)
-    out = m.(x)[end]
-    Flux.reset!(m)
-    out
-end
-# 训练
-loss(x, y) = logitcrossentropy(eval_model(x) ,y)
-println("训练前损失为 = ", sum(loss.(train_input, train_out)))
-opt = ADAM(0.001)
-
-function accuracy(x, y)
-    l=0
-    for (i,o) in zip(x,y)
-        l+=(onecold(eval_model(i))[1] == onecold(o))
-    end
-    l/size(x,1)
-end
-
-evalcb() = @show(sum(loss.(train_input, train_out)))
-@epochs Arg.epochs Flux.train!(loss, params(m), zip(train_input,train_out), opt, cb = Flux.throttle(evalcb,1))
-@show accuracy(test_input, test_out)
-
-#= 改进: 
-1. 使用词向量
-2. 加一个全连接层
-3. 使用时间长度不一样的训练集
-=#
